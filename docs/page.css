@@ -130,6 +130,14 @@ li ol {
 	margin-top: 4px;
 }
 
+.highlight {
+	overflow-x: auto;
+	word-break: break-all;
+	word-break: break-word;
+	hyphens: auto;
+	-webkit-hyphens: auto;
+}
+
 code {
 	font-size: calc(var(--font-size) - 1px);
 	line-height: calc(var(--line-height) - 1px);
