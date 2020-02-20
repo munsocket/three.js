@@ -61,6 +61,7 @@ body {
 	padding-bottom: var(--page-padding);
 	padding-right: var(--page-padding);
 	padding-left: calc(var(--page-padding) + var(--panel-width));
+	padding-left: -webkit-calc(var(--page-padding) + var(--panel-width));
 }
 
 a {
@@ -102,6 +103,12 @@ ol,
 ul {
 	margin-top: 16px;
 	margin-bottom: 16px;
+
+	overflow-x: auto;
+	word-break: break-all;
+	word-break: break-word;
+	hyphens: auto;
+	-webkit-hyphens: auto;
 }
 
 p {
@@ -127,6 +134,12 @@ code {
 	font-size: calc(var(--font-size) - 1px);
 	line-height: calc(var(--line-height) - 1px);
 	margin: 16px calc(-1 * var(--page-padding));
+
+	overflow-x: auto;
+	word-break: break-all;
+	word-break: break-word;
+	hyphens: auto;
+	-webkit-hyphens: auto;
 }
 
 ol code,
@@ -174,6 +187,12 @@ code:not(.inline) {
 	white-space: pre-wrap;
 	overflow: auto;
 	box-sizing: border-box;
+
+	overflow-x: auto;
+	word-break: break-all;
+	word-break: break-word;
+	hyphens: auto;
+	-webkit-hyphens: auto;
 }
 
 iframe {
