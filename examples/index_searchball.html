@@ -112,13 +112,14 @@
 					material.map = map;
 					material.needsUpdate = true;
 
-					loader.load( './screenshots/all_in_one_full.jpg', function( map ) {
+					loader.load( './screenshots/all_in_one_full.jpg', function( map2 ) {
 
-						map.generateMipmaps = false;
-						map.minFilter = THREE.LinearFilter;
-						map.magFilter = THREE.LinearFilter;
-						material.map = map;
+						map2.generateMipmaps = false;
+						map2.minFilter = THREE.LinearFilter;
+						map2.magFilter = THREE.LinearFilter;
+						material.map = map2;
 						material.needsUpdate = true;
+						map.dispose();
 
 					} );
 
