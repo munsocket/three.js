@@ -4,83 +4,157 @@
 		<title>uuid benchmark</title>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-		<style>body {background-color: #cce0ff;color: #000;}</style>
+		<style>body { background-color: #cce0ff;color: #000; }</style>
 	</head>
 
 	<body>
 		<div style="margin: 20px;">
-			<button type="button" onclick="start();">Start benchmark!</button>
-			<p>previous: <span id='math'></span></p>
-			<p>new: <span id='crypto'></span></p>
+			<p>
+				<button type="button" onclick="start();">Start benchmark!</button>
+				<span>&nbsp;</span>
+				<input type="text" id="benchCount" value="50000">
+			</p>
+
+			<div>
+				<input type="checkbox" id="previousCheck" checked>
+				<label>previous: <span id='previous'></span></label>
+			</div>
+
+			<div>
+				<input type="checkbox" id="newCheck" checked>
+				<label>new____: <span id='new'></span></label>
+			</div>
+
+			<div>
+				<input type="checkbox" id="new2Check" checked>
+			  	<label>new2___: <span id='new2'></span></label>
+			</div>
 		</div>
 
 		<script>
 			const _lut = [];
-			for ( let i = 0; i < 256; i ++ ) {
-				_lut[ i ] = ( i < 16 ? '0' : '' ) + ( i ).toString( 16 );
+			for (let i = 0; i < 256; i ++) {
+				_lut[ i ] = (i < 16 ? '0' : '') + (i).toString(16);
 			}
-			function getMath() {
+			function previousGenerate() {
 				const d0 = Math.random() * 0xffffffff | 0;
 				const d1 = Math.random() * 0xffffffff | 0;
 				const d2 = Math.random() * 0xffffffff | 0;
 				const d3 = Math.random() * 0xffffffff | 0;
-				let uuid = _lut[ d0 & 0xff ] + _lut[ d0 >> 8 & 0xff ] + _lut[ d0 >> 16 & 0xff ] + _lut[ d0 >> 24 & 0xff ] + '-'
+				const uuid = _lut[ d0 & 0xff ] + _lut[ d0 >> 8 & 0xff ] + _lut[ d0 >> 16 & 0xff ] + _lut[ d0 >> 24 & 0xff ] + '-'
 					+ _lut[ d1 & 0xff ] + _lut[ d1 >> 8 & 0xff ] + '-' + _lut[ d1 >> 16 & 0x0f | 0x40 ] + _lut[ d1 >> 24 & 0xff ] + '-'
 					+ _lut[ d2 & 0x3f | 0x80 ] + _lut[ d2 >> 8 & 0xff ] + '-' + _lut[ d2 >> 16 & 0xff ] + _lut[ d2 >> 24 & 0xff ] +
-					+ _lut[ d3 & 0xff ] + _lut[ d3 >> 8 & 0xff ] + _lut[ d3 >> 16 & 0xff ] + _lut[ d3 >> 24 & 0xff ]
+					+ _lut[ d3 & 0xff ] + _lut[ d3 >> 8 & 0xff ] + _lut[ d3 >> 16 & 0xff ] + _lut[ d3 >> 24 & 0xff ];
 					
 				return uuid.toUpperCase();
 			}
 
-
-			let _now = 0;
 			let _id = 0;
 
-			function getCrypto() {
-				let now = Date.now();
-				_now = ( _now === now ) ? _now : now;
-				_id = ( _id + 1 ) % 0xffffffff;
-				let uid = _lut[ _now >> 24 & 0xff ] + _lut[ _now >> 16 & 0xff ] + _lut[ _now >> 8 & 0xff ] + _lut[ _now & 0xff ] +
-					'-' + _lut[ _id >> 24 & 0xff ] + _lut[ _id >> 16 & 0xff ] + _lut[ _id >> 8 & 0xff ] + _lut[ _id & 0xff ];
+			// i32 time + i32 increment
+			function newGenerate() {
+				const d0 = Date.now();
+				const d1 = (++ _id) % 0xffffffff;
+				const uid = _lut[ d0 >> 24 & 0xff ] + _lut[ d0 >> 16 & 0xff ] + _lut[ d0 >> 8 & 0xff ] + _lut[ d0 & 0xff ] +
+					'-' + _lut[ d1 >> 24 & 0xff ] + _lut[ d1 >> 16 & 0xff ] + _lut[ d1 >> 8 & 0xff ] + _lut[ d1 & 0xff ];
 				return uid.toUpperCase();
+			}
+
+			let _id2 = 0;
+			let _seed = Math.PI * Math.random();
+			function _prng() {
+				const x = Math.sin(_seed ++) * 10000;
+				return x - Math.floor(x);
+			};
+
+			// RFC 4122 compliant ( i32 increment + i64 time + i32 pseudo random )
+			function new2Generate() {
+				const a = ( ++ _id2 ) % 0xffffffff;
+				const b = Date.now();
+				const c = b / 0xffffffff;
+				const d = _prng() * 0xffffffff | 0;
+				const uuid = _lut[ a >> 24 & 0xff ] + _lut[ a >> 16 & 0xff ] + _lut[ a >> 8 & 0xff ] + _lut[ a & 0xff ] + '-'
+					+ _lut[ b >> 24 & 0xff ] + _lut[ b >> 16 & 0xff ] + '-' + _lut[ c >> 24 & 0x0f | 0x40 ] + _lut[ b & 0xff ] + '-'
+					+ _lut[ c >> 16 & 0x3f | 0x80 ] + _lut[ c >> 8 & 0xff ] + '-' + _lut[ b >> 8 & 0xff ] + _lut[ c & 0xff ] +
+					+ _lut[ d >> 24 & 0xff ] + _lut[ d >> 16 & 0xff ] + _lut[ d >> 8 & 0xff ] + _lut[ d & 0xff ];
+				return uuid.toUpperCase();
 			}
 
 			function start() {
 
-				let mathCount = 0, cryptoCount = 0;
-				let mathSet = new Set(), cryptoSet = new Set();
-				let wtf = 0, mathTime = 0, cryptoTime = 0;
-				let m, c;
+				let previousCount = 0, newCount = 0, new2Count = 0, maxCount = 2;
+				let previousSet = new Set(), newSet = new Set(), new2Set = new Set();
+				let previousTime = 0, newTime = 0, new2Time = 0;
+				let uid, now, benchCount = document.getElementById('benchCount').value;
 
-				while ( mathCount < 2 && cryptoCount < 2 && wtf++ < 10000 ) {
+				let previousCheck = document.getElementById('previousCheck').checked;
+				let newCheck = document.getElementById('newCheck').checked;
+				let new2Check = document.getElementById('new2Check').checked;
 
-					let now = performance.now();
-					m = getMath();
-					mathTime += performance.now() - now;
-					
-					now = performance.now();
-					c = getCrypto();
-					cryptoTime += performance.now() - now;
+				while (previousCount < maxCount && newCount < maxCount && new2Count < maxCount && benchCount --) {
 
-					if ( mathSet.has( m ) ) {
-						mathCount++;
-						document.getElementById('math').innerHTML = mathCount.toString();
-					} else {
-						mathSet.add( m );
+					if (previousCheck) {
+
+						now = performance.now();
+						uid = previousGenerate();
+						previousTime += performance.now() - now;
+
+						if (previousSet.has(uid)) {
+							previousCount++;
+							document.getElementById('previous').innerHTML = previousCount.toString();
+						} else {
+							previousSet.add(uid);
+						}
+						
 					}
-					if ( cryptoSet.has( c ) ) {
-						cryptoCount++;
-						document.getElementById('crypto').innerHTML = cryptoCount.toString();
-					} else {
-						cryptoSet.add( c );
+
+					if (newCheck) {
+
+						now = performance.now();
+						uid = newGenerate();
+						newTime += performance.now() - now;
+
+						if (newSet.has(uid)) {
+							newCount++;
+							document.getElementById('new').innerHTML = newCount.toString();
+						} else {
+							newSet.add(uid);
+						}
+
+					}
+
+					if (new2Check) {
+
+						now = performance.now();
+						uid = new2Generate();
+						new2Time += performance.now() - now;
+
+						if (newSet.has(uid)) {
+							new2Count++;
+							document.getElementById('new2').innerHTML = new2Count.toString();
+						} else {
+							new2Set.add(uid);
+						}
+
 					}
 
 				}
 
 
-				document.getElementById('math').innerHTML = 'collision ' +  mathCount.toString() + ', time ' + mathTime.toString() + 'ms';
-				document.getElementById('crypto').innerHTML = 'collision ' + cryptoCount.toString() + ', time ' + cryptoTime.toString() + 'ms';
-				console.log(mathSet, cryptoSet)
+				if (previousCheck) console.log(previousSet);
+				document.getElementById('previous').innerHTML = previousCheck
+					? 'collision ' +  previousCount.toString() + ', time ' + previousTime.toString() + 'ms'
+					: '';
+
+				if (newCheck) console.log(newSet);
+				document.getElementById('new').innerHTML = newCheck
+					? 'collision ' + newCount.toString() + ', time ' + newTime.toString() + 'ms'
+					: '';
+
+				if (new2Check) console.log(new2Set);
+				document.getElementById('new2').innerHTML = new2Check
+					? 'collision ' + new2Count.toString() + ', time ' + new2Time.toString() + 'ms'
+					: '';
 
 			}
 		</script>
