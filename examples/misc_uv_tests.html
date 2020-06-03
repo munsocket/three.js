@@ -61,11 +61,13 @@
 			}
 
 			let _id2 = 0;
-			let _seed = Math.PI * Math.random();
+			let _seed = 1000000 * ( 1 + Math.random() );
 			function _prng() {
-				const x = Math.sin(_seed ++) * 10000;
-				return x - Math.floor(x);
-			};
+
+				_seed = _seed * 16807 % 2147483647;
+				return ( _seed - 1 ) / 2147483646;
+
+			}
 
 			// RFC 4122 compliant ( i32 increment + i64 time + i32 pseudo random )
 			function new2Generate() {
