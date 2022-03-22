@@ -9,11 +9,10 @@
  *  Morph normals / blend shape normals
  *
  * FBX format references:
- * 	https://wiki.blender.org/index.php/User:Mont29/Foundation/FBX_File_Structure
- * 	http://help.autodesk.com/view/FBX/2017/ENU/?guid=__cpp_ref_index_html (C++ SDK reference)
+ * 	https://help.autodesk.com/view/FBX/2017/ENU/?guid=__cpp_ref_index_html (C++ SDK reference)
  *
- * 	Binary format specification:
- *		https://code.blender.org/2013/08/fbx-binary-file-format-specification/
+ * Binary format specification:
+ *	https://code.blender.org/2013/08/fbx-binary-file-format-specification/
  */
 
 	let fbxTree;
@@ -549,7 +548,13 @@
 					case 'DiffuseColor':
 					case 'Maya|TEX_color_map':
 						parameters.map = scope.getTexture( textureMap, child.ID );
-						parameters.map.encoding = THREE.sRGBEncoding;
+
+						if ( parameters.map !== undefined ) {
+
+							parameters.map.encoding = THREE.sRGBEncoding;
+
+						}
+
 						break;
 
 					case 'DisplacementColor':
@@ -558,7 +563,13 @@
 
 					case 'EmissiveColor':
 						parameters.emissiveMap = scope.getTexture( textureMap, child.ID );
-						parameters.emissiveMap.encoding = THREE.sRGBEncoding;
+
+						if ( parameters.emissiveMap !== undefined ) {
+
+							parameters.emissiveMap.encoding = THREE.sRGBEncoding;
+
+						}
+
 						break;
 
 					case 'NormalMap':
@@ -568,13 +579,25 @@
 
 					case 'ReflectionColor':
 						parameters.envMap = scope.getTexture( textureMap, child.ID );
-						parameters.envMap.mapping = THREE.EquirectangularReflectionMapping;
-						parameters.envMap.encoding = THREE.sRGBEncoding;
+
+						if ( parameters.envMap !== undefined ) {
+
+							parameters.envMap.mapping = THREE.EquirectangularReflectionMapping;
+							parameters.envMap.encoding = THREE.sRGBEncoding;
+
+						}
+
 						break;
 
 					case 'SpecularColor':
 						parameters.specularMap = scope.getTexture( textureMap, child.ID );
-						parameters.specularMap.encoding = THREE.sRGBEncoding;
+
+						if ( parameters.specularMap !== undefined ) {
+
+							parameters.specularMap.encoding = THREE.sRGBEncoding;
+
+						}
+
 						break;
 
 					case 'TransparentColor':
@@ -1286,7 +1309,7 @@
 
 				for ( const nodeID in BindPoseNode ) {
 
-					if ( BindPoseNode[ nodeID ].attrType === 'BindPose' ) {
+					if ( BindPoseNode[ nodeID ].attrType === 'BindPose' && BindPoseNode[ nodeID ].NbPoseNodes > 0 ) {
 
 						const poseNodes = BindPoseNode[ nodeID ].PoseNode;
 
@@ -2085,16 +2108,8 @@
 			}
 
 			const curve = new THREE.NURBSCurve( degree, knots, controlPoints, startKnot, endKnot );
-			const vertices = curve.getPoints( controlPoints.length * 7 );
-			const positions = new Float32Array( vertices.length * 3 );
-			vertices.forEach( function ( vertex, i ) {
-
-				vertex.toArray( positions, i * 3 );
-
-			} );
-			const geometry = new THREE.BufferGeometry();
-			geometry.setAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
-			return geometry;
+			const points = curve.getPoints( controlPoints.length * 12 );
+			return new THREE.BufferGeometry().setFromPoints( points );
 
 		}
 
